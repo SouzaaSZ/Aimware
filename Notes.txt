@@ -1,0 +1,5 @@
+------------- Keybinds --------------
+
+Aimbot - "Mouse1" | Hold (Automatic Penetration On)
+Rage Bot - "Mouse4" | Hold (Automatic Penetration and Enhanced Hit Chance On)
+Third Person - "X" | Toggle
