@@ -24,7 +24,7 @@ local user_data = {
         name = "Souza",
         register = "3/04/2021",
         id = "1",
-        build = "(Beta)",
+        build = "Live",
         title = "Administrator"
     }
 }
