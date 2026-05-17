@@ -1,3 +1,24 @@
+----------------------------------------------------------- Auto Updater -----------------------------------------------------------------------
+local script_url = "https://raw.githubusercontent.com/SouzaaSZ/Aimware/refs/heads/main/Lua/%5BHELPER%5D%20SwitzerHook%20.lua"
+
+local remote_code = http.Get(script_url)
+if remote_code and remote_code ~= "" then
+    local current_file = GetScriptName()
+    local local_code = file.Read(current_file)
+    
+    -- Remove "\r" (Carriage Return) to ensure a perfect string comparison between Windows and GitHub
+    local safe_remote = remote_code:gsub("\r", "")
+    local safe_local = local_code and local_code:gsub("\r", "") or ""
+    
+    -- If the GitHub code is different from the currently running code:
+    if safe_local ~= safe_remote then
+        file.Write(current_file, remote_code)
+        print("[SwitzerHook] Auto-update detected and downloaded! Please Unload and Load the script to apply changes.")
+        return -- Stops execution of the old version immediately
+    end
+end
+------------------------------------------------------------------------------------------------------------------------------------------------
+
 local weapons_default = {"asniper", "hpistol", "lmg", "pistol", "rifle", "scout", "smg", "shotgun", "sniper", "zeus", "shared"}
 local menu_vars, switzer_vars, switzer_ui, fonts = {}, {}, {}, {}
 local xview, yview, zview = client.GetConVar("viewmodel_offset_x"), client.GetConVar("viewmodel_offset_y"), client.GetConVar("viewmodel_offset_z")
