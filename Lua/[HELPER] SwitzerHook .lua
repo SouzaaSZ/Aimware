@@ -1,4 +1,3 @@
------------------------------------------------------------ Auto Updater -----------------------------------------------------------------------
 local function CheckForUpdates()
     print("[SwitzerHook] Checking for updates from GitHub...")
     local script_url = "https://raw.githubusercontent.com/SouzaaSZ/Aimware/refs/heads/main/Lua/%5BHELPER%5D%20SwitzerHook%20.lua"
@@ -8,30 +7,25 @@ local function CheckForUpdates()
         local current_file = GetScriptName()
         local local_code = file.Read(current_file)
         
-        -- Remove "\r" (Carriage Return) to ensure a perfect string comparison between Windows and GitHub
         local safe_remote = remote_code:gsub("\r", "")
         local safe_local = local_code and local_code:gsub("\r", "") or ""
         
-        -- If the GitHub code is different from the currently running code:
         if safe_local ~= safe_remote then
             file.Write(current_file, remote_code)
             print("[SwitzerHook] Auto-update detected and downloaded!")
             print("[SwitzerHook] Please Unload and Load the script again to apply changes.")
-            return true -- Stops execution here
+            return true 
         end
     end
     
     print("[SwitzerHook] Script is up to date! Loading SwitzerHook...")
-    return false -- Continues loading the rest of the script
+    return false 
 end
 
--- 1. CHECA O SCRIPT ANTES DE QUALQUER COISA. SE ATUALIZAR, ELE PARA AQUI.
 if CheckForUpdates() then
     return 
 end
-------------------------------------------------------------------------------------------------------------------------------------------------
 
--- 2. SEGUE CARREGANDO O SCRIPT NORMALMENTE SE NÃO HOUVER UPDATE
 local weapons_default = {"asniper", "hpistol", "lmg", "pistol", "rifle", "scout", "smg", "shotgun", "sniper", "zeus", "shared"}
 local menu_vars, switzer_vars, switzer_ui, fonts = {}, {}, {}, {}
 local xview, yview, zview = client.GetConVar("viewmodel_offset_x"), client.GetConVar("viewmodel_offset_y"), client.GetConVar("viewmodel_offset_z")
@@ -40,7 +34,6 @@ local user_id = cheat.GetUserID()
 local gui_get, gui_set = gui.GetValue, gui.SetValue
 fonts.Water = draw.CreateFont("Calibri Bold", 12.5)
 
------------------------------------------------------------ FFI & Setup -----------------------------------------------------------------------
 ffi.cdef[[
     void keybd_event(unsigned char bVk, unsigned char bScan, unsigned long dwFlags, unsigned long dwExtraInfo);
     void mouse_event(unsigned long dwFlags, unsigned long dx, unsigned long dy, unsigned long dwData, unsigned long dwExtraInfo);
@@ -50,16 +43,14 @@ ffi.cdef[[
 
 local pressed_key = nil
 
--- Optimized FFI Table Mapping for Mouse Buttons (Cleaner and faster than multiple if/else)
 local MOUSE_FLAGS = {
-    [1] = {down = 0x0002, up = 0x0004, data = 0}, -- Mouse 1
-    [2] = {down = 0x0008, up = 0x0010, data = 0}, -- Mouse 2
-    [4] = {down = 0x0020, up = 0x0040, data = 0}, -- Mouse 3
-    [5] = {down = 0x0080, up = 0x0100, data = 1}, -- Mouse 4
-    [6] = {down = 0x0080, up = 0x0100, data = 2}  -- Mouse 5
+    [1] = {down = 0x0002, up = 0x0004, data = 0}, 
+    [2] = {down = 0x0008, up = 0x0010, data = 0}, 
+    [4] = {down = 0x0020, up = 0x0040, data = 0}, 
+    [5] = {down = 0x0080, up = 0x0100, data = 1}, 
+    [6] = {down = 0x0080, up = 0x0100, data = 2}  
 }
 
--- Function to translate the menu key code and simulate the physical click in Windows via FFI
 local function SimulateKey(key, is_pressed)
     local mouse_btn = MOUSE_FLAGS[key]
     if mouse_btn then
@@ -69,17 +60,14 @@ local function SimulateKey(key, is_pressed)
     end
 end
 
--- Safety function that checks if the active window in Windows is Counter-Strike 2
 local function IsGameInForeground()
     local active_window = ffi.C.GetForegroundWindow()
     local cs2_window = ffi.C.FindWindowA(nil, "Counter-Strike 2")
     return active_window ~= nil and cs2_window ~= nil and active_window == cs2_window
 end
 
------------------------------------------------------------ Smart Cache System -----------------------------------------------------------------------
 local CACHE = {}
 
--- Highly optimized function to update GUI/ConVars ONLY if their values actually changed (Saves massive FPS)
 local function UpdateStateIfChanged(cache_key, current_value, update_func)
     if CACHE[cache_key] ~= current_value then
         update_func(current_value)
@@ -87,7 +75,6 @@ local function UpdateStateIfChanged(cache_key, current_value, update_func)
     end
 end
 
------------------------------------------------------------ Switzer Ids ---------------------------------------------------------------
 local user_data = {
     [354692] = { name = "Souza", register = "3/04/2021", id = "1", build = "(Beta)", title = "Administrator" }
 }
@@ -96,7 +83,6 @@ local user = user_data[user_id] or {
     name = cheat.GetUserName(), title = "User", register = "N/A", id = user_id, build = "Live"
 }
 
------------------------------------------------------------- Menu & UI (Do NOT change names) ---------------------------------------------------------------------------
 switzer_ui.MENU_NEW_TAB = gui.Window("hook_switzer", "Switzer", 500, 250, 650, 500)
 switzer_ui.MENU_NEW_TAB:SetOpenKey(gui_get("adv.menukey"))
 
@@ -133,29 +119,23 @@ switzer_vars.aptoggler = gui.Checkbox(switzer_ui.aim_general, "ap_toggler", "Thr
 switzer_vars.smktoggle = gui.Checkbox(switzer_ui.aim_general, "smk_toggler", "Through Smoke", false)
 switzer_vars.SLIDER_DLY_TGR = gui.Slider(switzer_ui.aim_general, "DLY_TGR_SLIDER", "Trigger Delay", 0, 0, 500, 5)
 
------------------------------------------------------------ Logic ---------------------------------------------------------------
-
--- Applies settings to all weapons without repeating the loop unnecessarily
 local function SetAllWeaponsOption(option, value)
     for i = 1, #weapons_default do
         gui_set("lbot.weapon.vis." .. weapons_default[i] .. "." .. option, value)
     end
 end
 
--- Main function that manages the script's Aimbot (Cached to prevent FPS drops)
 local function RunAimbotLogic(lp)
     if not lp or not lp:IsAlive() or not gui_get("lbot.master") or not IsGameInForeground() then
         if pressed_key then SimulateKey(pressed_key, false); pressed_key = nil end
         return
     end
 
-    -- Cached updates (Runs the GUI update ONLY if the checkbox is clicked/changed)
     UpdateStateIfChanged("autofire", switzer_vars.aftoggler:GetValue(), function(v) gui_set("lbot.trg.autofire", v) end)
     UpdateStateIfChanged("autowall", switzer_vars.aptoggler:GetValue(), function(v) SetAllWeaponsOption("autowall", v and 1 or 0) end)
     UpdateStateIfChanged("smoke", switzer_vars.smktoggle:GetValue(), function(v) SetAllWeaponsOption("smoke", v and 1 or 0) end)
     UpdateStateIfChanged("nospread", switzer_vars.nstoggler:GetValue(), function(v) gui_set("lbot.trg.weapon.shared.accuracy.antispread", v) end)
 
-    -- FFI Logic 
     local aimkey = gui_get("lbot.aim.key")
     if aimkey and aimkey ~= 0 and switzer_vars.aftoggler:GetValue() then
         if pressed_key ~= aimkey then
@@ -169,7 +149,6 @@ local function RunAimbotLogic(lp)
     end
 end
 
--- Cached Viewmodel Updater
 local function UpdateViewModel(lp)
     if not lp then return end
     local is_custom = switzer_vars.custom_view:GetValue()
@@ -179,7 +158,6 @@ local function UpdateViewModel(lp)
     UpdateStateIfChanged("view_z", is_custom and switzer_vars.SLIDER_VIEWZ:GetValue() or zview, function(v) client.SetConVar("viewmodel_offset_z", v, true) end)
 end
 
--- Cached Menu Visibility Manager
 local function UpdateMenuVisibility()
     if user.title ~= "Administrator" and not CACHE["admin_lock"] then
         switzer_vars.switzer_mark_dev:SetValue(true)
@@ -191,7 +169,6 @@ local function UpdateMenuVisibility()
     local mark_dev_active = switzer_vars.switzer_mark_dev:GetValue()
     local view_active = switzer_vars.custom_view:GetValue()
 
-    -- Process visibility ONLY if the tab or checkboxes change
     if CACHE["menu_tab"] ~= current_tab or CACHE["menu_dev"] ~= mark_dev_active or CACHE["menu_view"] ~= view_active then
         switzer_vars.switzer_mark:SetInvisible(not mark_dev_active)
         switzer_vars.sw_mode_water:SetInvisible(not mark_dev_active)
@@ -209,11 +186,8 @@ local function UpdateMenuVisibility()
     end
 end
 
------------------------------------------------------------ Watermark & Callbacks ---------------------------------------------------------------
-
 local cached_watermark_text = ""
 
--- Function responsible for drawing the custom Watermark optimally
 local function DrawWatermark()
     if not switzer_vars.switzer_mark_dev:GetValue() then return end
     
@@ -221,7 +195,6 @@ local function DrawWatermark()
     local cur_build = switzer_vars.switzer_mark_build:GetValue()
     local modern = switzer_vars.sw_mode_water:GetValue() == 1
 
-    -- Caches the string concatenation to save CPU usage
     if CACHE["wt_uid"] ~= cur_uid or CACHE["wt_build"] ~= cur_build then
         cached_watermark_text = "SwitzerHook | " .. user.name
         if cur_uid then cached_watermark_text = cached_watermark_text .. " | Uid: " .. user.id end
@@ -261,8 +234,6 @@ callbacks.Register("CreateMove", function()
     UpdateViewModel(lp)
     RunAimbotLogic(lp)
 end)
-
------------------------------------------------------------ Indicators ---------------------------------------------------------------
 
 local RenderIndicator = (function()
     local font = {}
