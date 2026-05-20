@@ -90,7 +90,7 @@ switzer_ui.SWITZER_TAB_VAR = gui.Groupbox(switzer_ui.MENU_NEW_TAB, "SwitzerHook 
 switzer_ui.SWITZER_TABS = gui.Combobox(switzer_ui.SWITZER_TAB_VAR, "TABS_SWITZER", "Menu", "General", "Aimbot/Indicators", "Miscellaneous")
 
 switzer_ui.infor_lua = gui.Groupbox(switzer_ui.MENU_NEW_TAB, "Informations", 10, 85, 300, 140)
-switzer_ui.info_text = gui.Text(switzer_ui.infor_lua, "Welcome Back: " .. user.name .. "\n\nTitle: " .. user.title .. "\n\nJoined: " .. user.register .. "\n\nLast Update: 5/17/2024")
+switzer_ui.info_text = gui.Text(switzer_ui.infor_lua, "Welcome Back: " .. user.name .. "\n\nTitle: " .. user.title .. "\n\nJoined: " .. user.register .. "\n\nLast Update: 5/17/2026")
 
 switzer_ui.contact_lua = gui.Groupbox(switzer_ui.MENU_NEW_TAB, "Support", 320, 10, 310, 250)
 switzer_ui.suport_me = gui.Text(switzer_ui.contact_lua, "If you have any questions, come across a bug or\n\nexperience any issues with the script please\n\ncreate a ticket or in bug channel on\n\nDiscord.gg/AV4SNyx54y and provide a\n\ndetailed description of your problem.")
